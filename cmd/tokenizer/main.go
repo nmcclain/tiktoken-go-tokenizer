@@ -17,6 +17,7 @@ func main() {
 	encode := flag.String("encode", "", "text to encode")
 	decode := flag.String("decode", "", "space separated list of token ids to decode")
 	emitTokens := flag.Bool("tokens", false, "if true will output the tokens instead of the token ids")
+	countTokens := flag.Bool("count", false, "if true will output the count of tokens instead of the token ids")
 	listModels := flag.Bool("list-models", false, "list all supported models")
 	listEncodings := flag.Bool("list-encodings", false, "list all supported encoding formats")
 	flag.Parse()
@@ -44,7 +45,7 @@ func main() {
 	codec := getCodec(*model, *encoding)
 
 	if *encode != "" {
-		encodeInput(codec, *encode, *emitTokens)
+		encodeInput(codec, *encode, *emitTokens, *countTokens)
 	} else {
 		decodeInput(codec, *decode+" "+strings.Join(flag.Args(), " "))
 	}
@@ -66,7 +67,7 @@ func getCodec(model, encoding string) tokenizer.Codec {
 	}
 }
 
-func encodeInput(codec tokenizer.Codec, text string, wantTokens bool) {
+func encodeInput(codec tokenizer.Codec, text string, wantTokens bool, wantCount bool) {
 	ids, tokens, err := codec.Encode(text)
 	if err != nil {
 		log.Fatalf("error encoding: %v", err)
@@ -74,6 +75,8 @@ func encodeInput(codec tokenizer.Codec, text string, wantTokens bool) {
 
 	if wantTokens {
 		fmt.Println(strings.Join(tokens, " "))
+	} else if wantCount {
+		fmt.Println(len(tokens))
 	} else {
 		var textIds []string
 		for _, id := range ids {
